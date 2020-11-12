@@ -78,24 +78,24 @@ in the community repository. If it's available, just go ahead and install it
 from there since we won't be editing it's configuration anyways. Otherwise, I'll
 go over how to build/install from source.
 
-# Install dependencies
+1. Install dependencies
 
-    - ``libxinerama``
-    - ``fontconfig``
+   * ``libxinerama``
+   * ``fontconfig``
 
-# Clone ``dmenu`` repository
+2. Clone ``dmenu`` repository
 
-    ::
+   ::
 
-        git clone https://git.suckless.org/dmenu
+       git clone https://git.suckless.org/dmenu
 
-# Compile and install
+3. Compile and install
 
-    ::
+   ::
 
-        cd dmenu
-        make
-        sudo make install
+       cd dmenu
+       make
+       sudo make install
 
 ******************
 Setting up ``dwm``
