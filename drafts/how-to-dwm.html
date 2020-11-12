@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="I have relied on a number of software projects from the suckless team over the years, especially when it comes to my desktop environment. My workstation setup leans heavily on dwm, dmenu,...">
+        <meta name="keywords" content="dwm, linux, suckless">
+        <link rel="icon" href="https://breakingmatter.com/favicon.ico">
+        <!-- Canonical -->
+        <link rel="canonical" href="https://breakingmatter.com/drafts/how-to-dwm.html">
+        <!-- /Canonical -->
+
+        <title>How to dwm - Breaking Matter</title>
+
+        <!-- Stylesheets -->
+        <link href="https://breakingmatter.com/theme/css/all.min.css" rel="stylesheet">
+        <!-- /Stylesheets -->
+
+        <!-- RSS Feeds -->
+        <!-- /RSS Feeds -->
+
+        <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+          <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+    </head>
+
+    <body>
+
+        <!-- Header -->
+    <div class="header-container gradient">
+
+            <!-- Static navbar -->
+            <div class="container">
+                <div class="header-nav">
+                    <div class="header-logo">
+                        <a class="pull-left" href="https://breakingmatter.com/">Breaking Matter</a>
+                    </div>
+                    <div class="nav pull-right">
+                                <a href="https://breakingmatter.com/">Homepage</a>
+                                <a href="https://breakingmatter.com/categories.html">Categories</a>
+                    </div>
+                </div>
+            </div>
+            <!-- /Static navbar -->
+
+            <!-- Header -->
+    <!-- Header -->
+    <div class="container header-wrapper">
+        <div class="row">
+              <div class="col-lg-12">
+                  <div class="header-content">
+                      <h1 class="header-title">How to dwm</h1>
+                      <p class="header-date">By <a href="https://breakingmatter.com/author/zane-mingee.html">Zane Mingee</a>, Wed 11 November 2020, modified Wed 11 November 2020, in category <a href="https://breakingmatter.com/category/workstation.html">Workstation</a></p>
+                      <div class="header-underline"></div>
+                      <div class="clearfix"></div>
+                      <p class="pull-right header-tags">
+                          <span class="glyphicon glyphicon-tags mr5" aria-hidden="true"></span>
+<a href="https://breakingmatter.com/tag/dwm.html">dwm</a>, <a href="https://breakingmatter.com/tag/linux.html">linux</a>, <a href="https://breakingmatter.com/tag/suckless.html">suckless</a>                      </p>
+                  </div>
+              </div>
+        </div>
+    </div>
+    <!-- /Header -->
+            <!-- /Header -->
+
+        </div>
+        <!-- /Header -->
+
+
+        <!-- Content -->
+    <div class="container content">
+        <p>I have relied on a number of software projects from the suckless team over the
+years, especially when it comes to my desktop environment. My workstation setup
+leans heavily on <tt class="docutils literal">dwm</tt>, <tt class="docutils literal">dmenu</tt>, <tt class="docutils literal">slstatus</tt>, and <tt class="docutils literal">slock</tt>. Several people
+have asked me about my setup, either out of curiosity or because they want to
+give a tiling window manager a shot. It can be fairly daunting to jump into it,
+especially because the suckless projects do not rely on GUI- or file-based
+configuration. All customization is done by editing C header files. That,
+combined with not having basics like a straightforward way of setting a
+wallpaper, makes for a challenge to anyone wanting to get their feet wet. I
+finally decided to write a brief guide on how to setup <tt class="docutils literal">dwm</tt> and the related
+software. Much of this is opinionated, because with a desktop environment like
+this, you're going to customize it to your liking down the road. After following
+along, you'll at least be able to setup an environment similar to mine, and also
+know what you can do next.</p>
+<p>I'm going to assume if you're reading this that you're proficient with Linux,
+your distro, and the related toolchains. We'll be using <tt class="docutils literal">git</tt>, <tt class="docutils literal">make</tt>,
+editing C header files, compiling software... This isn't a guide on how to
+compile a C program, so details will be glossed over to focus on the software
+we're trying to build, not how to build them. I also won't be covering all of
+the intricate details of using <tt class="docutils literal">dwm</tt>. The project page has a good tutorial to
+show you the basics of using <tt class="docutils literal">dwm</tt>: <a class="reference external" href="https://dwm.suckless.org/tutorial/">https://dwm.suckless.org/tutorial/</a>. But
+the best way to learn is by experience. Follow along, install it, and try it
+out for yourself.</p>
+<div class="section" id="basics">
+<h2>Basics</h2>
+<p>To quote the suckless project directly:</p>
+<blockquote>
+dwm is a dynamic window manager for X. It manages windows in tiled, monocle
+and floating layouts. All of the layouts can be applied dynamically,
+optimising the environment for the application in use and the task
+performed.</blockquote>
+<p>What that means is, <tt class="docutils literal">dwm</tt> is a windowing manager, not a desktop environment.
+This isn't Gnome, or KDE, or XFCE.. It renders &quot;windows&quot;, but the comparisons
+end there. It does not come with any kind of desktop environment, just tooling
+to render windows and interact with them. In fact, <tt class="docutils literal">dwm</tt> doesn't even render a
+toolbar above windows, or an &quot;X&quot; to close them. Much of the interaction with
+<tt class="docutils literal">dwm</tt> goes through the keyboard.</p>
+<p>That being said, some other features you may consider &quot;basic&quot; aren't provided
+out of the box. <tt class="docutils literal">dwm</tt> supports a &quot;status bar&quot; for displaying system
+information or whatever else you may like, but only through an external
+interface. Getting data into the status bar requires a separate program such as
+<tt class="docutils literal">slstatus</tt>. Further, there is no default lock screen or window. This is also
+provided via a separate program, such as <tt class="docutils literal">slock</tt>. I'll cover setting up these
+as well, just understand that this is the intent of dwm and a result of
+following the UNIX philosophy. All <tt class="docutils literal">dwm</tt> does is provide a window manager. All
+other functionalities are out of scope.</p>
+</div>
+<div class="section" id="setting-up-dmenu">
+<h2>Setting up <tt class="docutils literal">dmenu</tt></h2>
+<p>First we will setup a program called <tt class="docutils literal">dmenu</tt>. This is a dependency of <tt class="docutils literal">dwm</tt>,
+and is used to render the tag and status bar. Most people won't need to do any
+configuration, as <tt class="docutils literal">dwm</tt> will pass it's own configuration values to it at
+runtime anyways.</p>
+<p>Before we compile <tt class="docutils literal">dmenu</tt>, you should see if your distros package manager
+already has a package available. In the case of Arch Linux, <tt class="docutils literal">dmenu</tt> is already
+in the community repository. If it's available, just go ahead and install it
+from there since we won't be editing it's configuration anyways. Otherwise, I'll
+go over how to build/install from source.</p>
+<p># Install dependencies</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal">libxinerama</tt></li>
+<li><tt class="docutils literal">fontconfig</tt></li>
+</ul>
+</blockquote>
+<p># Clone <tt class="docutils literal">dmenu</tt> repository</p>
+<blockquote>
+<pre class="literal-block">
+git clone https://git.suckless.org/dmenu
+</pre>
+</blockquote>
+<p># Compile and install</p>
+<blockquote>
+<pre class="literal-block">
+cd dmenu
+make
+sudo make install
+</pre>
+</blockquote>
+</div>
+<div class="section" id="setting-up-dwm">
+<h2>Setting up <tt class="docutils literal">dwm</tt></h2>
+<p>Now that <tt class="docutils literal">dmenu</tt> is installed, we can setup <tt class="docutils literal">dwm</tt>. This essentially requires
+building from source. While some distros do have <tt class="docutils literal">dwm</tt> available in their
+repos, these have no configuration, no patches (for features/tweaks), just the
+base code. These packages always require some kind of scaffolding for applying
+your changes to the package before installation. Whatever the case may be, it's
+going to be a lot simpler to just build from source and manage it directly.</p>
+<p>The only dependency you need for <tt class="docutils literal">dwm</tt> other than <tt class="docutils literal">dmenu</tt> are the Xlib
+header files. Installing &quot;devel&quot; or &quot;header&quot; packages varies depending on the
+distro you use. In the case of Arch Linux, you'll want <tt class="docutils literal">libx11</tt> from the extra
+repository, as it contains the header files.</p>
+<ul class="simple">
+<li>Arch Linux: <tt class="docutils literal">libx11</tt></li>
+<li>Ubuntu: <tt class="docutils literal"><span class="pre">libx11-dev</span></tt></li>
+<li>Fedora/CentOS/RHEL: <tt class="docutils literal"><span class="pre">libx11-devel</span></tt></li>
+</ul>
+<p>Once we have that package installed, we can clone the <tt class="docutils literal">dwm</tt> repository:</p>
+<pre class="literal-block">
+git clone git://git.suckless.org/dwm
+</pre>
+<p>Move into the resultant directory and pull up your favorite text editor.</p>
+<div class="section" id="configuring-suckless-projects">
+<h3>Configuring suckless projects</h3>
+<p>Most (if not all) suckless projects are configured by editing a C header file.
+In most cases, this is named <tt class="docutils literal">config.def.h</tt>. This file gets copied to
+<tt class="docutils literal">config.h</tt> by <tt class="docutils literal">make</tt>, and that file is used during compilation. When you
+change a config option, you want to:</p>
+<pre class="literal-block">
+rm config.h
+make
+</pre>
+<p>The file is set as a target in the <tt class="docutils literal">Makefile</tt>, but <tt class="docutils literal">config.def.h</tt> isn't a
+dependency. This means that <tt class="docutils literal">make</tt> won't overwrite the <tt class="docutils literal">config.h</tt> file by
+itself; you will have to remove the file yourself.</p>
+<p>If you open the <tt class="docutils literal">config.def.h</tt> file in your text editor, you'll see a basic C
+header file. If you don't have any experience with C, this may look rather
+strange. I won't get into the weeds of header file syntax. Much of it is rather
+self-explanatory for our purposes.</p>
+<p>In the first section, you'll see appearance settings. These control border
+sizes, bar location, theming, etc. Then come tagging, layouts, keys, shortcuts,
+and button mappings. These sections are specific to <tt class="docutils literal">dwm</tt>, but are a good
+outline of how suckless software is generally configured.</p>
+</div>
+<div class="section" id="configuring-dwm">
+<h3>Configuring dwm</h3>
+<p>I'll go through some of the settings in <tt class="docutils literal">dwm</tt> you may be interested in.</p>
+<div class="section" id="appearance">
+<h4>Appearance</h4>
+<p>To really be comfortable with <tt class="docutils literal">dwm</tt>, you're going to want to theme and style
+it to your liking. I personally like the Nord theme, and I've used it throughout
+my environment. I'll reference those settings here, but feel free to change it
+to your liking.</p>
+<div class="section" id="borders">
+<h5>Borders</h5>
+<p>The default border size is a little hard to see on 2K+ monitors, so you may want
+to bump up the size:</p>
+<pre class="literal-block">
+static const unsigned int borderpx = 2;
+</pre>
+</div>
+<div class="section" id="bar-location">
+<h5>Bar Location</h5>
+<p>If you prefer your tag/status bar to be on the bottom, you can configure this:</p>
+<pre class="literal-block">
+static const int topbar = 0;
+</pre>
+</div>
+<div class="section" id="fonts">
+<h5>Fonts</h5>
+<p>In theory, your fonts will be configured sanely in your OS, and you can depend
+on that for setting your default font. Setting fonts can be a pain though
+depending on your distro. If you have issues getting <tt class="docutils literal">dwm</tt> to load your
+preferred font, you can hardcode this in the settings:</p>
+<pre class="literal-block">
+static const char *fonts[]          = { &quot;Ubuntu Mono:style=Regular:size=14:antialias=true:autohint=true&quot; };
+static const char dmenufont[]       = &quot;Ubuntu Mono:style=Regular:size=14:antialias=true:autohint=true&quot;;
+</pre>
+</div>
+<div class="section" id="theme">
+<h5>Theme</h5>
+<p>You can style this to your liking, but these are the settings I use for the Nord
+theme:</p>
+<pre class="literal-block">
+static const char col_gray1[]       = &quot;#2E3440&quot;;
+static const char col_gray2[]       = &quot;#2E3440&quot;;
+static const char col_gray3[]       = &quot;#D8DEE9&quot;;
+static const char col_gray4[]       = &quot;#2E3440&quot;;
+static const char col_cyan[]        = &quot;#88C0D0&quot;;
+</pre>
+</div>
+</div>
+<div class="section" id="tagging">
+<h4>Tagging</h4>
+<p>The first letter in <tt class="docutils literal">dwm</tt> stands for &quot;dynamic&quot;. Each monitor has it's own set
+of tags Each application window exists on a single tag, and you can view
+multiple tags at a time. These tags show up on the left side of the &quot;bar&quot;. By
+default, these are rendered as the index number of the tag. You can set them to
+any character(s) you'd like though. Some people set these to unicode symbols,
+some set them to strings, or you could be like me and just keep the defaults:</p>
+<pre class="literal-block">
+static const char *tags[] = { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot; };
+</pre>
+<pre class="literal-block">
+static const char *tags[] = {
+    &quot;main&quot;,
+    &quot;comms&quot;,
+    &quot;media&quot;,
+    &quot;devel&quot;,
+    &quot;ref&quot;,
+    &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;
+};
+</pre>
+<p>Below the tag array, you can configure default rules for applications. This is
+useful in a few scenarios. You may want Slack to always open on your tag for
+communication apps, or open Spotify/VLC/etc on your media tag. Maybe you want
+some applications to default to your second or third monitor. Or, you could use
+something like Pidgin that has a small contact window that doesn't display
+properly as a full tile so it needs to stay floating. Whatever the case, the
+rules array lets you customize the defaults.</p>
+<pre class="literal-block">
+/* class      instance    title       tags mask     isfloating   monitor */
+{ &quot;Gimp&quot;,     NULL,       NULL,       0,            1,           -1 },
+{ &quot;Firefox&quot;,  NULL,       NULL,       1 &lt;&lt; 8,       0,           -1 },
+</pre>
+<p>The default config file has Gimp and Firefox as examples. Gimp is actually a
+very good example, because it uses multiple windows for displaying swatches or
+tools. Displaying these as full tiles is going to make using Gimp difficult, so
+it defaults to having them float.</p>
+<p>In order for <tt class="docutils literal">dwm</tt> to select the correct window, you need to supply it with a
+combination of window class, instance, and title. The config file references
+<tt class="docutils literal">xprop</tt> for getting this information but not actually how to use it. All you
+have to do is run:</p>
+<pre class="literal-block">
+xprop | grep -E &quot;WM_(CLASS|NAME)&quot;
+</pre>
+<p>Your cursor will turn into a cross selector. Click the window you'd like to
+customize, and the command will return the information you need. <tt class="docutils literal">WM_CLASS</tt>
+will have two values, <tt class="docutils literal">instance</tt> and <tt class="docutils literal">class</tt> respectively. <tt class="docutils literal">WM_NAME</tt> will
+have a single value. If the application you're customizing has dialog boxes or
+separate windows it opens, you'll want to check the properties for the main
+window as well as any child windows. If you want all of the windows to have the
+same setting, use less specifiers. If you only want a single of it's dialog
+windows to be customized, use the all the specifiers for that dialog window.
+Here are a few examples of what I'm using:</p>
+<pre class="literal-block">
+/* class            instance            title           tags mask   isfloating  monitor */
+{ &quot;Claws-mail&quot;,     &quot;claws-mail&quot;,       NULL,           1 &lt;&lt; 1,     0,          1 },
+{ &quot;Gajim&quot;,          &quot;org.gajim.Gajim&quot;,  &quot;Gajim&quot;,        1 &lt;&lt; 1,     0,          1 },
+{ &quot;Pidgin&quot;,         &quot;Pidgin&quot;,           &quot;Buddy List&quot;,   1 &lt;&lt; 1,     1,          1 },
+{ &quot;Pidgin&quot;,         &quot;Pidgin&quot;,           NULL,           1 &lt;&lt; 1,     0,          1 },
+{ &quot;Slack&quot;,          NULL,               NULL,           1 &lt;&lt; 1,     0,          1 },
+{ &quot;Zeal&quot;,           NULL,               NULL,           1 &lt;&lt; 3,     0,          1 },
+</pre>
+</div>
+</div>
+</div>
+
+
+
+        
+    </div>
+        <!-- /Content --> 
+
+        <!-- Footer -->
+        <div class="footer gradient-2">
+            <div class="container footer-container ">
+                <div class="row">
+                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                        <div class="footer-title">Sitemap</div>
+                        <ul class="list-unstyled">
+                            <li><a href="https://breakingmatter.com/archives.html">Archives</a></li>
+                            <li><a href="https://breakingmatter.com/tags.html">Tags</a></li>
+                            <li><a href="https://breakingmatter.com/authors.html">Authors</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                        <div class="footer-title">Social</div>
+                        <ul class="list-unstyled">
+                            <li><a href="https://github.com/zmingee" target="_blank">GitHub</a></li>
+                            <li><a href="https://www.linkedin.com/pub/zane-mingee/19/b29/747" target="_blank">LinkedIn</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                    </div> 
+                    <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+                        <p class="pull-right text-right">
+                            <small><em>Proudly powered by <a href="http://docs.getpelican.com/" target="_blank">pelican</a></em></small><br/>
+                            <small><em>Theme and code by <a href="https://github.com/molivier" target="_blank">molivier</a></em></small><br/>
+                            <small>&copy; Zane Mingee 2020</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Footer -->
+    </body>
+</html>
