@@ -133,27 +133,26 @@ already has a package available. In the case of Arch Linux, <tt class="docutils 
 in the community repository. If it's available, just go ahead and install it
 from there since we won't be editing it's configuration anyways. Otherwise, I'll
 go over how to build/install from source.</p>
-<p># Install dependencies</p>
-<blockquote>
+<ol class="arabic">
+<li><p class="first">Install dependencies</p>
 <ul class="simple">
 <li><tt class="docutils literal">libxinerama</tt></li>
 <li><tt class="docutils literal">fontconfig</tt></li>
 </ul>
-</blockquote>
-<p># Clone <tt class="docutils literal">dmenu</tt> repository</p>
-<blockquote>
+</li>
+<li><p class="first">Clone <tt class="docutils literal">dmenu</tt> repository</p>
 <pre class="literal-block">
 git clone https://git.suckless.org/dmenu
 </pre>
-</blockquote>
-<p># Compile and install</p>
-<blockquote>
+</li>
+<li><p class="first">Compile and install</p>
 <pre class="literal-block">
 cd dmenu
 make
 sudo make install
 </pre>
-</blockquote>
+</li>
+</ol>
 </div>
 <div class="section" id="setting-up-dwm">
 <h2>Setting up <tt class="docutils literal">dwm</tt></h2>
