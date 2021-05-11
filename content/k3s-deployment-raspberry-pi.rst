@@ -3,7 +3,6 @@ K3s Deployment on Raspberry Pis
 ###############################
 
 :date: 2021-05-10
-:modified: 2021-05-10
 :tags: k3s, k8s, kubernetes, linux, raspberry pi
 :category: k3s
 :slug: k3s-deployment-raspberry-pi
