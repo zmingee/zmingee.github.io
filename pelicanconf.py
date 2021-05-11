@@ -22,12 +22,32 @@ TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
-# Social widget
-
+# Pagination
 DEFAULT_PAGINATION = 10
 
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
+
+# Plugins
+
+PLUGINS = [
+    "sitemap"
+]
+
+## pelican-sitemap
+SITEMAP = {
+    "format": "xml",
+    "priorities": {
+        "articles": 0.5,
+        "indexes": 0.5,
+        "pages": 0.5
+    },
+    "changefreqs": {
+        "articles": "monthly",
+        "indexes": "daily",
+        "pages": "monthly"
+    }
+}
 
 # Themes
 THEME = 'nest'
@@ -41,7 +61,10 @@ SOCIAL = (
 )
 
 
+###############################################################################
+
 # NEST Template
+#
 # Minified CSS
 NEST_CSS_MINIFY = True
 # Add canonical link element to top page header and all
