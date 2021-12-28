@@ -1,0 +1,229 @@
+<!doctype html><html><head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge"><title>K3s Deployment on Raspberry Pis - Zane Mingee</title><meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=description content="Deploy K3s on Raspberry Pis running Alpine Linux">
+<meta property="og:image" content>
+<meta property="og:title" content="K3s Deployment on Raspberry Pis">
+<meta property="og:description" content="Deploy K3s on Raspberry Pis running Alpine Linux">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://zatm.dev/posts/k3s-deployment-raspberry-pi/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-05-10T00:00:00+00:00">
+<meta property="article:modified_time" content="2021-05-10T00:00:00+00:00">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="K3s Deployment on Raspberry Pis">
+<meta name=twitter:description content="Deploy K3s on Raspberry Pis running Alpine Linux">
+<script src=https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@1,500&display=swap" rel=stylesheet>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans&display=swap" rel=stylesheet>
+<link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel=stylesheet>
+<link rel=stylesheet type=text/css media=screen href=https://zatm.dev/css/main.2f9b5946627215dc1ae7fa5f82bfc9cfcab000329136befeea5733f21e77d68f.css>
+<link id=darkModeStyle rel=stylesheet type=text/css href=https://zatm.dev/css/dark.726cd11ca6eb7c4f7d48eb420354f814e5c1b94281aaf8fd0511c1319f7f78a4.css disabled>
+</head>
+<body>
+<div class=content><header>
+<div class=main>
+<a href=https://zatm.dev/>Zane Mingee</a>
+</div>
+<nav>
+<a href=/>Home</a>
+<a href=/about>About</a>
+<a href=/now>Now</a>
+<a href=/posts>All posts</a>
+<a href=/tags>Tags</a>
+| <a id=dark-mode-toggle onclick=toggleTheme() href></a>
+<script src=https://zatm.dev/js/themetoggle.js></script>
+</nav>
+</header>
+<main>
+<article>
+<div class=title>
+<h1 class=title>K3s Deployment on Raspberry Pis</h1>
+<div class=meta>Posted on May 10, 2021</div>
+</div>
+<section class=body>
+<p>This serves as a short guide to deploying K3s onto Raspberry Pis. It&rsquo;s written
+with a target OS of Alpine Linux in mind, but could easily be adapted for other
+distributions.</p>
+<h1 id=configure-alpine-linux>Configure Alpine Linux</h1>
+<p>Instructions on install Alpine Linux on a Raspberry Pi are outside the scope of
+this article. It&rsquo;s best to either use a cluster of Rasperry Pis that are the
+same version/architecture, or to use an Alpine Linux base image that has the
+same architecture. Then you don&rsquo;t have to worry about using different images
+architectures on each node.</p>
+<p>Once Alpine Linux is installed and configured (in sys mode), you&rsquo;ll want to
+append the following options to the Linux cmdline at <code>/boot/cmdline.txt</code> on
+each node:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory
+</code></pre></div><p>After updating the cmdline, reboot the node.</p>
+<blockquote>
+<p>You may want to consider your naming scheme. An example would be
+<code>kube-node[0-9]{1,2}.int.example.test</code></p>
+</blockquote>
+<h2 id=additional-environment-setup>Additional Environment Setup</h2>
+<p>My own environment has a separate node that provides DNS and NFS. I would
+recommend having something similar, so you can have DNS resolution at a
+minimum. Running <code>dnsmasq</code> and <code>nfs-server</code> will suffice when properly
+configured, which is outside the scope of this article.</p>
+<h1 id=deploy-k3s-master>Deploy K3s Master</h1>
+<p>We will be installing K3s with a single master. I personally have reliability
+issues when attempting clustering with Raspberry Pis, but your mileage may
+vary. We&rsquo;ll also be deploying K3s without the <code>metrics-server</code>, to cut down
+on overhead due to the environment constraints.</p>
+<p>Select the node you&rsquo;ll be deploying as the K3s master (such as
+<code>kube-node1.int.example.test</code>), and run the following:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>curl -sfL https://get.k3s.io | <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    INSTALL_K3S_CHANNEL<span style=color:#f92672>=</span>latest <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    K3S_NODE_NAME<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#66d9ef>$(</span>hostname -s<span style=color:#66d9ef>)</span><span style=color:#e6db74>&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    sh -s - <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    --tls-san<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#66d9ef>$(</span>hostname -f<span style=color:#66d9ef>)</span><span style=color:#e6db74>&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    --disable metrics-server
+</code></pre></div><p>A breakdown of what this command is doing:</p>
+<dl>
+<dt><code>INSTALL_K3S_CHANNEL=latest</code></dt>
+<dd>Here we select the <code>latest</code> channel, rather than the default <code>stable</code></dd>
+<dt><code>K3S_NODE_NAME="$(hostname -s)"</code></dt>
+<dd>Here the K3s node name is set to the short hostname, which should be the
+default but is set here to be explicit</dd>
+<dt><code>--tls-san="$(hostname -f)"</code></dt>
+<dd>Here a SAN is added to the TLS certs that get created for the full FQDN</dd>
+<dt><code>--disable metrics-server</code></dt>
+<dd>
+<p>Here we disable the metrics-server deployment due to resource constraints</p>
+</dd>
+</dl>
+<p>Wait for the K3s deployment to complete on the master before continuing. This
+may take a few minutes. When the master is ready, you should see output like
+this:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>    kube-node1:~# kubectl get nodes
+    NAME         STATUS   ROLES                  AGE   VERSION
+    kube-node1   Ready    control-plane,master   10m   v1.21.0+k3s1
+</code></pre></div><h1 id=deploy-k3s-workers>Deploy K3s Worker(s)</h1>
+<p>Now we can move onto deploying K3s workers. You can deploy multiple at a time,
+but I generally do one at a time just to be safe.</p>
+<p>You&rsquo;ll need to copy the node token from the K3s master to join the worker
+nodes, located at <code>/var/lib/rancher/k3s/server/node-token</code></p>
+<p>Select the node you&rsquo;ll be deploying the K3s worker agent on (such as
+<code>kube-node2.int.example.test</code>), and run the following:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>    curl -sfL https://get.k3s.io | <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        INSTALL_K3S_CHANNEL<span style=color:#f92672>=</span>latest <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        K3S_NODE_NAME<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#66d9ef>$(</span>hostname -s<span style=color:#66d9ef>)</span><span style=color:#e6db74>&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        K3S_URL<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;https://kube-node1.int.example.test:6443&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        K3S_TOKEN<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;&lt;NODE-TOKEN-FROM-ABOVE&gt;&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>        sh -
+</code></pre></div><p>A breakdown of what this command is doing:</p>
+<dl>
+<dt><code>INSTALL_K3S_CHANNEL=latest</code></dt>
+<dd>Here we select the <code>latest</code> channel, rather than the default <code>stable</code></dd>
+<dt><code>K3S_NODE_NAME="$(hostname -s)"</code></dt>
+<dd>Here the K3s node name is set to the short hostname, which should be the
+default but is set here to be explicit</dd>
+<dt><code>K3S_URL="https://kube-node1.int.example.test:6443"</code></dt>
+<dd>Here we set the K3s master to connect to (update to match your environment)</dd>
+<dt><code>K3s_URL="&lt;NODE-TOKEN-FROM-ABOVE>"</code></dt>
+<dd>Here we set the K3s node token to join the master. This is located on the
+master at <code>/var/lib/rancher/k3s/server/node-token</code></dd>
+</dl>
+<p>Wait for the K3s deployment to complete before continuing. This may take a few
+minutes. When the worker is ready, you should see output like this:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>    kube-node1:~# kubectl get nodes
+    NAME         STATUS   ROLES                  AGE   VERSION
+    kube-node1   Ready    control-plane,master   20m   v1.21.0+k3s1
+    kube-node2   Ready    &lt;none&gt;                 10m   v1.21.0+k3s1
+</code></pre></div><p>Repeat this on all the worker nodes you would like to join the K3s environment.</p>
+<h1 id=verify-environment>Verify Environment</h1>
+<p>Your K3s environment should now be complete. We can run some basic checks now:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>    kube-node1:~# kubectl cluster-info
+    Kubernetes control plane is running at https://127.0.0.1:6443
+    CoreDNS is running at
+    https://127.0.0.1:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>    kube-node1:~# kubectl get-nodes
+    NAME         STATUS   ROLES                  AGE    VERSION
+    kube-node1   Ready    control-plane,master   30m    v1.21.0+k3s1
+    kube-node2   Ready    &lt;none&gt;                 20m    v1.21.0+k3s1
+    kube-node3   Ready    &lt;none&gt;                 10m    v1.21.0+k3s1
+</code></pre></div><h1 id=extras>Extras</h1>
+<h2 id=setup-remote-access>Setup Remote Access</h2>
+<p>Configuring remote access from your workstation is simple. First install
+<code>kubectl</code> using your distributions package manager. Then, on the K3s master
+node, copy the file <code>/etc/rancher/k3s/k3s.yaml</code> to <code>~/.kube/config</code>. You&rsquo;ll
+want to change the <code>cluster[0].cluster.server</code> to match the external name of
+the master:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>    <span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>v1</span>
+    <span style=color:#f92672>clusters</span>:
+    - <span style=color:#f92672>cluster</span>:
+        <span style=color:#f92672>certificate-authority-data</span>: <span style=color:#ae81ff>...</span>
+        <span style=color:#f92672>server</span>: <span style=color:#ae81ff>https://kube-node1.int.example.test:6443</span>
+      <span style=color:#f92672>name</span>: <span style=color:#ae81ff>default</span>
+</code></pre></div><p>Once you have the configuration file placed, you can use <code>kubectl</code> on your
+local workstation to manage the K3s environment:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>[workstation]$ kubectl cluster-info
+Kubernetes control plane is running at https://kube-node1.int.example.test:6443
+CoreDNS is running at
+https://kube-node1.int.example.test:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+</code></pre></div><h2 id=deploy-cert-manager-with-lets-encrypt-issuer>Deploy cert-manager with Lets Encrypt Issuer</h2>
+<p>Now we can deploy <code>cert-manager</code> to automate certificate management. We&rsquo;ll
+also configure an Issuer for Lets Encrypt. The following example uses an ACME
+HTTP01 challenge, but you can refer to the <a href=https://cert-manager.io/docs/configuration/acme/ target=_blank>cert-manager documentation</a>
+for
+details on using the DNS01 challenge.</p>
+<p>The first step is to install the <code>CustomResourceDefinitions</code> and
+<code>cert-manager</code>:</p>
+<blockquote>
+<p>This link is for <code>v1.3.1</code>, and will likely become stale with new releases.
+Please refer to the <a href=https://github.com/jetstack/cert-manager/releases target=_blank>cert-manager GitHub Releases page</a>
+for the most up to
+date version.</p>
+</blockquote>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>$ kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.yaml
+</code></pre></div><p>It may take a few minutes for everything to deploy and populate. You can check
+the output of <code>kubectl get all -A</code> to check for any resources still in the
+<code>Creating</code> state.</p>
+<p>Once it&rsquo;s complete, we can deploy the Issuer for Lets Encrypt. Create a new
+manifest file from the following:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml>    <span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>cert-manager.io/v1</span>
+    <span style=color:#f92672>kind</span>: <span style=color:#ae81ff>ClusterIssuer</span>
+    <span style=color:#f92672>metadata</span>:
+      <span style=color:#f92672>name</span>: <span style=color:#ae81ff>letsencrypt</span>
+    <span style=color:#f92672>spec</span>:
+      <span style=color:#f92672>acme</span>:
+        <span style=color:#f92672>server</span>: <span style=color:#ae81ff>https://acme-v02.api.letsencrypt.org/directory</span>
+        <span style=color:#f92672>email</span>: <span style=color:#ae81ff>john.dough@example.com</span>
+        <span style=color:#f92672>privateKeySecretRef</span>:
+          <span style=color:#f92672>name</span>: <span style=color:#ae81ff>letsencrypt</span>
+        <span style=color:#f92672>solvers</span>:
+        - <span style=color:#f92672>http01</span>:
+            <span style=color:#f92672>ingress</span>:
+              <span style=color:#f92672>class</span>: <span style=color:#ae81ff>traefik</span>
+</code></pre></div><p>You&rsquo;ll want to update the <code>spec.acme.email</code> value to match your email for
+verification purposes. This manifest will create a ClusterIssuer resource that
+will issue certificate requests and certificates from Lets Encrypt. This can be
+used to add TLS support to Ingresses. For more information on this, please
+refer to the <a href=https://cert-manager.io/docs/usage/ingress/ target=_blank>Securing Ingress Resources</a>
+guide.</p>
+<h1 id=conclusion>Conclusion</h1>
+<p>You should now have a K3s environment that&rsquo;s ready for further use. You can
+deploy manifests to this environment like you would any other. I&rsquo;ll write
+guides in the future on building manifests and deploying open-source software.</p>
+<p>If you would like to use Helm, you can review the <a href=https://rancher.com/docs/k3s/latest/en/helm/ target=_blank>Rancher K3s
+documentation</a>
+on the subject.</p>
+</section>
+<div class=post-tags>
+<nav class="nav tags">
+<ul class=tags>
+<li><a href=/tags/k3s>k3s</a></li>
+<li><a href=/tags/k8s>k8s</a></li>
+<li><a href=/tags/kubernetes>kubernetes</a></li>
+<li><a href=/tags/linux>linux</a></li>
+</ul>
+</nav>
+</div>
+</article>
+</main>
+<footer>
+<hr><a class=soc href=mailto:zmingee@gmail.com title=Email><i data-feather=mail></i></a>|<a class=soc href=https://github.com/zmingee title=GitHub><i data-feather=github></i></a>|<a class=soc href=https://gitlab.com/zmingee title=GitLab><i data-feather=gitlab></i></a>|⚡️
+2021 © Zane Mingee | <a href=https://github.com/athul/archie>Archie Theme</a> | Built with <a href=https://gohugo.io>Hugo</a>
+</footer>
+<script>feather.replace()</script></div>
+</body>
+</html>
