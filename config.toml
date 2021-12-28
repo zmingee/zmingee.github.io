@@ -1,0 +1,59 @@
+baseURL = 'https://zatm.dev/'
+languageCode = 'en-us'
+title = 'Zane Mingee'
+copyright = '© Zane Mingee'
+theme = 'archie'
+
+# Code Highlighting
+pygmentsstyle = 'monokai'
+pygmentscodefences = true
+pygmentscodefencesguesssyntax = true
+
+paginate = 3
+
+[params]
+    mode = "toggle"
+    useCDN = true
+    subtitle = "Assorted musings on systems and development"
+
+[[params.social]]
+name = "Email"
+icon = "mail"
+url = "mailto:zmingee@gmail.com"
+
+[[params.social]]
+name = "GitHub"
+icon = "github"
+url = "https://github.com/zmingee"
+
+[[params.social]]
+name = "GitLab"
+icon = "gitlab"
+url = "https://gitlab.com/zmingee"
+
+
+
+[[menu.main]]
+name = "Home"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "About"
+url = "/about"
+weight = 2
+
+[[menu.main]]
+name = "Now"
+url = "/now"
+weight = 3
+
+[[menu.main]]
+name = "All posts"
+url = "/posts"
+weight = 4
+
+[[menu.main]]
+name = "Tags"
+url = "/tags"
+weight = 5
